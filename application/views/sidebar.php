@@ -77,7 +77,7 @@ if (sidebar_collapse == 'true') {
           </li> -->
                 <!-- User Account Menu -->
 
-                <li class="dropdown tasks-menu">
+                <!-- <li class="dropdown tasks-menu">
                     <a href="#" class="dropdown-toggle text-right" data-toggle="dropdown" title="App Language"
                         data-toggle='tooltip'>
                         <i class="fa fa-language "></i>
@@ -103,7 +103,7 @@ if (sidebar_collapse == 'true') {
                             </ul>
                         </li>
                     </ul>
-                </li>
+                </li> -->
 
                 <?php if($CI->permissions('pos')) { ?>
                 <li class="text-center" id="">
@@ -145,9 +145,9 @@ if (sidebar_collapse == 'true') {
                         </li>
                     </ul>
                 </li>
-                <li class="hidden-xs">
+                <!-- <li class="hidden-xs">
                     <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
-                </li>
+                </li> -->
             </ul>
         </div>
 
