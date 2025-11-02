@@ -30,10 +30,10 @@
          $expire_date ='';
          $description ='';
          $final_price ='';
-          $tax_id='';
-          $discount='';
-          $wholesale_discount='';
-          $discount_type='Fixed';
+         $tax_id='';
+         $discount='';
+         $wholesale_discount='';
+         $discount_type='Fixed';
 
 
 
@@ -385,7 +385,8 @@
                                             for="wholesale_discount"><?= $this->lang->line('wholesale_discount'); ?></label>
                                         <input type="text" class="form-control only_currency" id="wholesale_discount"
                                             name="wholesale_discount" value="<?php print $wholesale_discount; ?>">
-                                        <span id="discount_msg" style="display:none" class="text-danger"></span>
+                                        <span id="wholesale_discount_msg" style="display:none"
+                                            class="text-danger"></span>
                                     </div>
 
                                 </div>

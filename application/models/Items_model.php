@@ -5,8 +5,8 @@ class Items_model extends CI_Model {
 
 	//Datatable start
 	var $table = 'db_items as a';
-	var $column_order = array( 'a.id','a.item_image','a.item_code','a.item_name','b.category_name','c.unit_name','a.stock','a.alert_qty','a.purchase_price','a.final_price','d.tax_name','d.tax','a.status','e.brand_name','a.tax_type','a.hsn','a.sku'); //set column field database for datatable orderable
-	var $column_search = array( 'a.id','a.item_image','a.item_code','a.item_name','b.category_name','c.unit_name','a.stock','a.alert_qty','a.purchase_price','a.final_price','d.tax_name','d.tax','a.status','e.brand_name','a.custom_barcode','a.tax_type','a.hsn','a.sku'); //set column field database for datatable searchable 
+	var $column_order = array( 'a.id','a.item_image','a.custom_barcode','a.item_code','a.item_name','b.category_name','c.unit_name','a.stock','a.alert_qty','a.purchase_price','a.final_price','d.tax_name','d.tax','a.status','e.brand_name','a.tax_type','a.hsn','a.sku','a.discount','a.wholesale_discount'); //set column field database for datatable orderable
+	var $column_search = array( 'a.id','a.item_image','a.custom_barcode','a.item_code','a.item_name','b.category_name','c.unit_name','a.stock','a.alert_qty','a.purchase_price','a.final_price','d.tax_name','d.tax','a.status','e.brand_name','a.custom_barcode','a.tax_type','a.hsn','a.sku','a.discount','a.wholesale_discount'); //set column field database for datatable searchable 
 	var $order = array('a.id' => 'desc'); // default order 
 
 	public function __construct()
@@ -233,6 +233,7 @@ class Items_model extends CI_Model {
 			$query=$query->row();
 			$data['q_id']=$query->id;
 			$data['item_code']=$query->item_code;
+			$data['item_sing_name']=$query->item_sing_name;
 			$data['item_name']=$query->item_name;
 			$data['description']=$query->description;
 			$data['brand_id']=$query->brand_id;
@@ -252,6 +253,7 @@ class Items_model extends CI_Model {
 			$data['lot_number']=$query->lot_number;
 			$data['custom_barcode']=$query->custom_barcode;
 			$data['discount']=$query->discount;
+			$data['wholesale_discount']=$query->wholesale_discount;
 			$data['discount_type']=$query->discount_type;
 			$data['expire_date']=(!empty($query->expire_date)) ? show_date($query->expire_date):'';
 			
@@ -314,7 +316,9 @@ class Items_model extends CI_Model {
 			$profit_margin = (empty(trim($profit_margin))) ? 'null' : $profit_margin;
 			$expire_date= (!empty(trim($expire_date))) ? date('Y-m-d',strtotime($expire_date)) : 'null';
 			if(empty($discount)){ $discount=0; }
+			if(empty($wholesale_discount)){ $wholesale_discount=0; }
 			$query1="update db_items set 
+						item_sing_name='$item_sing_name',
 						item_name='$item_name',
 						item_code='$item_code',
 						description='$description',
@@ -334,6 +338,7 @@ class Items_model extends CI_Model {
 						profit_margin=$profit_margin,
 						sales_price='$sales_price',
 						discount='$discount',
+						wholesale_discount='$wholesale_discount',
 						discount_type='$discount_type',
 						final_price='$final_price'
 						$item_image 
