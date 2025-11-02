@@ -83,6 +83,9 @@ class Items extends MY_Controller {
 		$tax_disabled = (is_tax_disabled()) ? true : false;
 		foreach ($list as $items) {
 			
+			$profit_margin = app_number_format(($items->final_price - $items->discount) - $items->purchase_price);
+			$profit_margin_wholesale = app_number_format(($items->final_price - $items->wholesale_discount) - $items->purchase_price);
+
 			$no++;
 			$row = array();
 			$row[] = '<input type="checkbox" name="checkbox[]" value='.$items->id.' class="checkbox column_checkbox" >';
@@ -93,18 +96,17 @@ class Items extends MY_Controller {
 			// 			<image style='border:1px #72afd2 solid;' src='".base_url(return_item_image_thumb($items->item_image))."' width='75%' height='50%'> </a>" : "
 			// 			<image style='border:1px #72afd2 solid;' src='".base_url()."theme/images/no_image.png' title='No Image!' width='75%' height='50%' >";
 			$row[] = $items->custom_barcode;
-			$row[] = $items->item_code;
 			$row[] = "<label class='text-blue'>".$items->item_name;
-			$row[] = $items->brand_name;//$this->get_brand_name($items->brand_id);
-			$row[] = $items->category_name;
+			$row[] = "<span>".$items->brand_name."</span> (".$items->category_name.")";//$this->get_brand_name($items->brand_id);
 			$row[] = $items->unit_name;
-			$row[] = $items->stock;
-			$row[] = $items->alert_qty;
+			$row[] = "<span>". $items->stock." (Minimum Qty: ". $items->alert_qty.")</span>";
 			$row[] = app_number_format($items->purchase_price);
 			$row[] = app_number_format($items->final_price);
 			$row[] = "<span>".app_number_format($items->discount)." (".app_number_format($items->final_price - $items->discount ).")"."</span>";
 			$row[] = "<span>".app_number_format($items->wholesale_discount)." (".app_number_format($items->final_price - $items->wholesale_discount ).")"."</span>";
 			// $row[] = ($tax_disabled)? '<p class="text-yellow text-bold">Disabled</p>' :$items->tax_name."<br>(".$items->tax_type.")";
+			$row[] = "<span>".app_number_format($profit_margin)." (".app_number_format(($profit_margin / $items->purchase_price) * 100)."%)</span>";
+			$row[] = "<span>".app_number_format($profit_margin_wholesale)." (".app_number_format(($profit_margin_wholesale / $items->purchase_price) * 100)."%)</span>";
 
 			 		if($items->status==1){ 
 			 			$str= "<span onclick='update_status(".$items->id.",0)' id='span_".$items->id."'  class='label label-success' style='cursor:pointer'>Active </span>";}

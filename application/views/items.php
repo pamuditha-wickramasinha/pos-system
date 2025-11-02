@@ -26,7 +26,7 @@
          $item_name=$sku=$hsn=$opening_stock=$item_code=$brand_id=$category_id=$gst_percentage=$tax_type=
          $sales_price=$purchase_price=$profit_margin=$unit_id=$price=$lot_number="";
          $stock = 0;
-         $alert_qty= 0;
+         $alert_qty= 1;
          $expire_date ='';
          $description ='';
          $final_price ='';
@@ -214,8 +214,7 @@
                                         <span id="hsn_msg" style="display:none" class="text-danger"></span>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label for="alert_qty"><?= $this->lang->line('minimum_qty'); ?><span
-                                                class="text-danger">*</span></label>
+                                        <label for="alert_qty"><?= $this->lang->line('minimum_qty'); ?></label>
                                         <input type="number" class="form-control" id="alert_qty" name="alert_qty"
                                             placeholder="" min="0" value="<?php print $alert_qty; ?>">
                                         <span id="alert_qty_msg" style="display:none" class="text-danger"></span>

@@ -112,17 +112,20 @@
                                                 <input type="checkbox" class="group_check checkbox">
                                             </th>
                                             <th><?= $this->lang->line('barcode'); ?></th>
-                                            <th><?= $this->lang->line('item_code'); ?></th>
                                             <th><?= $this->lang->line('item_name'); ?></th>
-                                            <th><?= $this->lang->line('brand'); ?></th>
-                                            <th><?= $this->lang->line('category'); ?></th>
+                                            <th><?= $this->lang->line('brand'); ?>
+                                                (<?= $this->lang->line('category'); ?>)</th>
                                             <th><?= $this->lang->line('unit'); ?></th>
-                                            <th><?= $this->lang->line('stock_qty'); ?></th>
-                                            <th><?= $this->lang->line('minimum_qty'); ?></th>
+                                            <th><?= $this->lang->line('stock_qty'); ?>
+                                                (<?= $this->lang->line('minimum_qty'); ?>)</th>
                                             <th><?= $this->lang->line('purchase_price'); ?></th>
                                             <th><?= $this->lang->line('final_sales_price'); ?></th>
-                                            <th><?= $this->lang->line('discount'); ?></th>
-                                            <th><?= $this->lang->line('wholesale_discount'); ?></th>
+                                            <th><?= $this->lang->line('discount'); ?> (R.Price)
+                                            </th>
+                                            <th><?= $this->lang->line('wholesale_discount'); ?> (W. Price)
+                                            </th>
+                                            <th><?= $this->lang->line('profit_margin'); ?></th>
+                                            <th><?= $this->lang->line('profit_margin'); ?></th>
                                             <th><?= $this->lang->line('status'); ?></th>
                                             <th><?= $this->lang->line('action'); ?></th>
                                         </tr>
