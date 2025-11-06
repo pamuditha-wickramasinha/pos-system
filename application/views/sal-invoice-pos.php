@@ -282,51 +282,7 @@
 
                     </tbody>
                     <tfoot>
-                        <!-- <tr><td colspan="5"><hr></td></tr>    -->
-                        <!-- <tr>
-                            <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right">
-
-                                <?= (is_tax_disabled()) ? $this->lang->line('subtotal') : $this->lang->line('before_tax'); ?>
-
-                            </td>
-                            <td style=" padding-left: 2px; padding-right: 2px;" align="right">
-                                <?= number_format(($before_tax),2,'.','');?></td>
-                        </tr>
-                        <tr class="<?=tax_disable_class()?>">
-                            <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right">
-                                <?= $this->lang->line('tax_amount'); ?></td>
-                            <td style=" padding-left: 2px; padding-right: 2px;" align="right">
-                                <?= number_format(($tax_amt),2,'.','');?></td>
-                        </tr> -->
-                        <!-- <tr >
-						<td style=" padding-left: 2px; padding-right: 2px;" colspan="4" align="right"><?= $this->lang->line('subtotal'); ?></td>
-						<td style=" padding-left: 2px; padding-right: 2px;" align="right"><?= number_format(($subtotal),2,'.','');?></td>
-					</tr> -->
-                        <!-- <tr>
-	                     <td style=' padding-left: 2px; padding-right: 2px;' colspan='4' align='right'>Tax Amt</td>
-	                      <td style=' padding-left: 2px; padding-right: 2px;' align='right'><?= number_format(($tax_amt),2,'.','');?></td>
-	                </tr> -->
-                        <!-- <tr>
-                            <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right">
-                                <?= $this->lang->line('other_charges'); ?></td>
-                            <td style=" padding-left: 2px; padding-right: 2px;" align="right"><?= $other_charges_amt; ?>
-                            </td>
-                        </tr> -->
-                        <!-- <?php if(!empty($tot_discount_to_all_amt) && $tot_discount_to_all_amt!=0) {?>
                         <tr>
-                            <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right">
-                                <?= $this->lang->line('discount_on_all'); ?>
-                                <?= ($discount_to_all_type=='in_percentage') ? $discount_to_all_input .'%' : $discount_to_all_input.'[Fixed]' ;?>
-                            </td>
-                            <td style=" padding-left: 2px; padding-right: 2px;" align="right">
-                                <?= number_format(($tot_discount_to_all_amt),2,'.',''); ?></td>
-                        </tr>
-                        <?php } ?> -->
-
-
-                        <!-- <tr><td style="border-bottom-style: dashed;border-width: 0.1px;" colspan="5"></td></tr>   -->
-                        <tr>
-                            <!-- <td style=" padding-left: 2px; padding-right: 2px;font-weight: bold;" colspan="5" align="right"><?= $this->lang->line('total'); ?></td> -->
                             <td style=" padding-left: 2px; padding-right: 2px;font-weight: bold;" colspan="5"
                                 align="right">එකතුව(රු):</td>
 
@@ -334,12 +290,9 @@
                                 <?= $grand_total; ?></td>
                         </tr>
                         <tr style="height: 5px;"></tr>
-
-                        <!-- change_return_status -->
                         <?php if(change_return_status()) {
 						$change_return_amount = get_change_return_amount($sales_id); ?>
                         <tr>
-                            <!-- <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right"> <?= $this->lang->line('paid_amount'); ?></td> -->
                             <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right">ලබාදුන්
                                 මුදල(රු):
                             </td>
@@ -347,7 +300,6 @@
                                 <?= number_format($paid_amount+$change_return_amount,2,'.',''); ?></td>
                         </tr>
                         <tr>
-                            <!-- <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right"><?= $this->lang->line('change_return'); ?></td> -->
                             <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right">ඉතිරි
                                 මුදල(රු):
                             </td>
@@ -362,45 +314,8 @@
                             <td style=" padding-left: 2px; padding-right: 2px;" align="right">
                                 <?= number_format($paid_amount,2,'.',''); ?></td>
                         </tr>
-
                         <?php } ?>
-
-
-                        <!-- <tr>
-                            <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right">
-                                <?= $this->lang->line('previous_due'); ?></td>
-                            <td style=" padding-left: 2px; padding-right: 2px;" align="right">
-                                <?= number_format($previous_due,2,'.',''); ?></td>
-                        </tr>
-
-                        <tr>
-                            <td style=" padding-left: 2px; padding-right: 2px;" colspan="5" align="right">
-                                <?= $this->lang->line('customer_due'); ?></td>
-                            <td style=" padding-left: 2px; padding-right: 2px;" align="right">
-                                <?= number_format($customer_due,2,'.',''); ?></td>
-                        </tr> -->
-
                         <tr style="height: 15px;"></tr>
-
-                        <!-- <tr>
-                            <td colspan="6" align="center">
-
-                                <?php 
-								//if the parameter value has slash
-								 $sales_code = str_replace('=', '-', str_replace('/', '_', base64_encode($sales_code)));
-						?>
-                                <div style="display:inline-block;vertical-align:middle;line-height:16px !important;">
-
-                                    <?php
-
-								echo $CI->print_qr($sales_code);
-								?>
-
-                                </div>
-
-                            </td>
-                        </tr> -->
-
                     </tfoot>
                 </table>
             </td>

@@ -123,7 +123,7 @@ class Items extends MY_Controller {
 
 											if($this->permissions('items_edit'))
 											$str2.='<li>
-												<a title="Edit Record ?" href="'.base_url('items/update/'.$items->id).'">
+												<a title="Edit Record ?" target="_blank" href="'.base_url('items/update/'.$items->id).'">
 													<i class="fa fa-fw fa-edit text-blue"></i>Edit
 												</a>
 											</li>';

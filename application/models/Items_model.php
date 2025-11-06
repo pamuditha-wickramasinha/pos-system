@@ -5,8 +5,8 @@ class Items_model extends CI_Model {
 
 	//Datatable start
 	var $table = 'db_items as a';
-	var $column_order = array( 'a.id','a.item_image','a.custom_barcode','a.item_code','a.item_name','b.category_name','c.unit_name','a.stock','a.alert_qty','a.purchase_price','a.final_price','d.tax_name','d.tax','a.status','e.brand_name','a.tax_type','a.hsn','a.sku','a.discount','a.wholesale_discount'); //set column field database for datatable orderable
-	var $column_search = array( 'a.id','a.item_image','a.custom_barcode','a.item_code','a.item_name','b.category_name','c.unit_name','a.stock','a.alert_qty','a.purchase_price','a.final_price','d.tax_name','d.tax','a.status','e.brand_name','a.custom_barcode','a.tax_type','a.hsn','a.sku','a.discount','a.wholesale_discount'); //set column field database for datatable searchable 
+	var $column_order = array( 'a.id','a.item_image','a.item_sing_name','a.custom_barcode','a.item_code','a.item_name','b.category_name','c.unit_name','a.stock','a.alert_qty','a.purchase_price','a.final_price','d.tax_name','d.tax','a.status','e.brand_name','a.tax_type','a.hsn','a.sku','a.discount','a.wholesale_discount'); //set column field database for datatable orderable
+	var $column_search = array( 'a.id','a.item_image','a.item_sing_name','a.custom_barcode','a.item_code','a.item_name','b.category_name','c.unit_name','a.stock','a.alert_qty','a.purchase_price','a.final_price','d.tax_name','d.tax','a.status','e.brand_name','a.custom_barcode','a.tax_type','a.hsn','a.sku','a.discount','a.wholesale_discount'); //set column field database for datatable searchable 
 	var $order = array('a.id' => 'desc'); // default order 
 
 	public function __construct()
