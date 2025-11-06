@@ -102,13 +102,13 @@ class Pos_model extends CI_Model {
 				//$item_amount = ($item_sales_price * $item_sales_qty) + $item_tax_amt;
 				//end 
 
+				$str="addrow($res2->id)";
 	        	if($res2->stock <=0){
-	        		$str="zero_stock()";
+	        	// 	$str="zero_stock()";
 	        		$disabled='';
 	        		$bg_color="background-color:#c8c8c8";
 	        	}
 	        	else{
-	        		$str="addrow($res2->id)";
 	        		$disabled="disabled=disabled";
 	        		$bg_color="background-color:#a1db75";
 	        	}

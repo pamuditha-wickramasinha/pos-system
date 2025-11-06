@@ -820,16 +820,16 @@
             real_discount = wholesale_discount
         }
 
-        if (stock > 0) {
-            if (stock > 1) {
-                qty = 1;
-            } else {
-                qty = stock;
-            }
+        // if (stock > 0) {
+        if (stock > 1 || stock < 0) {
+            qty = 1;
         } else {
-            zero_stock();
-            return;
+            qty = stock;
         }
+        // } else {
+        //     zero_stock();
+        //     return;
+        // }
         var quantity =
             '<div class="input-group input-group-sm"><span class="input-group-btn"><button onclick="decrement_qty(' +
             item_id + ',' + rowcount +
@@ -957,15 +957,15 @@
         var item_qty = $("#item_qty_" + item_id).val();
         var stock = $("#td_" + rowcount + "_1").html();
 
-        if (parseFloat(item_qty) < parseFloat(stock)) {
-            new_item_qty = parseFloat(item_qty) + 1;
+        // if (parseFloat(item_qty) < parseFloat(stock)) {
+        new_item_qty = parseFloat(item_qty) + 1;
 
-            if (parseFloat(new_item_qty) > parseFloat(stock)) {
-                new_item_qty = stock;
-            }
-
-            $("#item_qty_" + item_id).val(parseFloat(new_item_qty).toFixed(2));
+        if (parseFloat(new_item_qty) > parseFloat(stock) && stock > 0) {
+            new_item_qty = stock;
         }
+
+        $("#item_qty_" + item_id).val(parseFloat(new_item_qty).toFixed(2));
+        // }
         make_subtotal(item_id, rowcount);
     }
     //DECREMENT ITEM
@@ -1407,11 +1407,11 @@
                 var item_id = ui.item.id;
             }
 
-            if (parseFloat(stock) == 0) {
-                toastr["error"]("Out of Stock!");
-                $("#item_search").val('');
-                return;
-            }
+            // if (parseFloat(stock) == 0) {
+            //     toastr["error"]("Out of Stock!");
+            //     $("#item_search").val('');
+            //     return;
+            // }
             //addrow(item_id);
             get_item_details(item_id);
             $("#item_search").val('');
