@@ -241,6 +241,7 @@
             <!-- **********************MODALS***************** -->
             <?php include"modals/modal_customer.php"; ?>
             <?php include"modals/modal_pos_sales_item.php"; ?>
+            <?php include"modals/modal_quick_add_item.php"; ?>
             <!-- **********************MODALS END***************** -->
             <!-- Main content -->
             <section class="content">
@@ -382,6 +383,9 @@
                                                 <input type="text" class="form-control"
                                                     placeholder="Item name/Barcode/Itemcode [Ctrl+Shift+S]"
                                                     id="item_search">
+                                                <span class="input-group-addon pointer" data-toggle="modal"
+                                                    data-target="#quick_add_item" title="Quick Item?"><i
+                                                        class="fa fa-plus text-primary fa-lg"></i></span>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
@@ -411,7 +415,8 @@
                                                             <th width="25%"><?= $this->lang->line('quantity'); ?></th>
                                                             <th width="15%"><?= $this->lang->line('price'); ?></th>
                                                             <th width="10%"><?= $this->lang->line('discount'); ?></th>
-                                                            <th width="10%" class='<?=tax_disable_class()?>'>
+                                                            <th style="display: none" width="10%"
+                                                                class='<?=tax_disable_class()?>'>
                                                                 <?= $this->lang->line('tax'); ?></th>
                                                             <th width="15%"><?= $this->lang->line('subtotal'); ?></th>
                                                             <th width="5%"><i class="fa fa-close"></i></th>
@@ -570,8 +575,8 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="input-group input-group-md">
-                                            <select class="form-control select2" id="category_id" name="category_id"
-                                                style="width: 100%;">
+                                            <select class="form-control select2" id="get_category_id"
+                                                name="get_category_id" style="width: 100%;">
                                                 <?php
                       $query1="select * from db_category where status=1";
                       $q1=$this->db->query($query1);
@@ -601,7 +606,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="input-group input-group-md">
-                                            <select class="form-control select2" id="brand_id" name="brand_id"
+                                            <select class="form-control select2" id="get_brand_id" name="get_brand_id"
                                                 style="width: 100%;">
                                                 <?php
                       $query1="select * from db_brands where status=1";
@@ -640,8 +645,8 @@
                                         <div class="input-group input-group-md">
 
                                             <input type="text" class="form-control" data-toggle="tooltip"
-                                                title="Enter Item Name" placeholder="Item Name" id="item_name"
-                                                name="item_name">
+                                                title="Enter Item Name" placeholder="Item Name" id="get_item_name"
+                                                name="get_item_name">
 
                                             <span class="input-group-btn">
                                                 <button type="button" class="btn text-blue btn-flat reset_item_name"
@@ -709,6 +714,7 @@
     <!-- iCheck -->
     <script src="<?php echo $theme_link; ?>plugins/iCheck/icheck.min.js"></script>
 
+    <script src="<?php echo $theme_link; ?>js/quick_model.js"></script>
     <script src="<?php echo $theme_link; ?>js/fullscreen.js"></script>
     <script src="<?php echo $theme_link; ?>js/modals.js"></script>
     <script src="<?php echo $theme_link; ?>js/pos.js"></script>
@@ -769,7 +775,7 @@
     //REMOTELY FETCH THE ALL ITEMS OR CATEGORY WISE ITEMS.
     function get_details() {
         /*$(".box").append('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
-        $.post("<?php echo $base_url; ?>pos/get_details",{id:$("#category_id").val()},function(result){
+        $.post("<?php echo $base_url; ?>pos/get_details",{id:$("#get_category_id").val()},function(result){
           $(".search_div").html('');
           $(".search_div").html(result);
           $(".overlay").remove();
@@ -866,7 +872,7 @@
         str += '<td id="td_' + rowcount + '_6" class="text-right">' + info + '</td>';
 
         /*Tax amt*/
-        str += '<td id="td_' + rowcount +
+        str += '<td style="display: none" id="td_' + rowcount +
             '_11" class="<?=tax_disable_class()?>"><input data-toggle="tooltip" title="Click to Change" id="td_data_' +
             rowcount + '_11" onclick="show_sales_item_modal(' + rowcount + ')" name="td_data_' + rowcount +
             '_11" type="text" class="form-control no-padding pointer min_width" readonly value="' + tax_amt + '"></td>';
@@ -960,9 +966,9 @@
         // if (parseFloat(item_qty) < parseFloat(stock)) {
         new_item_qty = parseFloat(item_qty) + 1;
 
-        if (parseFloat(new_item_qty) > parseFloat(stock) && stock > 0) {
-            new_item_qty = stock;
-        }
+        // if (parseFloat(new_item_qty) > parseFloat(stock) && stock > 0) {
+        //     new_item_qty = stock;
+        // }
 
         $("#item_qty_" + item_id).val(parseFloat(new_item_qty).toFixed(2));
         // }
@@ -1055,6 +1061,9 @@
     }
 
     function calulate_discount(discount_input, discount_type, total) {
+        if (discount_input == "" || discount_input == null) {
+            return 0;
+        }
         if (discount_type == 'in_percentage') {
             return parseFloat((total * discount_input) / 100);
         } else { //in_fixed
@@ -1067,6 +1076,7 @@
         var item_qty = 0;
         var rowcount = $("#hidden_rowcount").val();
         var discount_input = $("#discount_input").val();
+
         var discount_type = $("#discount_type").val();
         var other_charges = parseFloat($("#other_charges").val());
         other_charges = (isNaN(other_charges)) ? parseFloat(0) : other_charges;
@@ -1209,11 +1219,11 @@
 
         //CATEGORY WISE ITEM FETCH FROM SERVER
         var show_only_searched = true;
-        $("#category_id,#brand_id").on("change", function() {
+        $("#get_category_id,#get_brand_id").on("change", function() {
             get_details(null, show_only_searched);
         });
 
-        $("#item_name").on("keyup", function() {
+        $("#get_item_name").on("keyup", function() {
             get_details(null, show_only_searched);
         });
 
@@ -1228,19 +1238,19 @@
         //RIGHT SIDE: CLEAR SEARCH BOX
         /* $(".show_all").on("click",function(){
            $("#search_it").val('').trigger("keyup");
-           $("#category_id").val('').trigger("change");
+           $("#get_category_id").val('').trigger("change");
          });*/
 
         //Reset Category & brand
         $(".reset_categories").on("click", function() {
-            $("#category_id").val('').trigger("change");
+            $("#get_category_id").val('').trigger("change");
         });
         $(".reset_brands").on("click", function() {
-            $("#brand_id").val('').trigger("change");
+            $("#get_brand_id").val('').trigger("change");
         });
         $(".reset_item_name").on("click", function() {
-            $("#item_name").val('');
-            $("#brand_id").val('').trigger("change");
+            $("#get_item_name").val('');
+            $("#get_brand_id").val('').trigger("change");
         });
 
 
@@ -1367,6 +1377,8 @@
                             };
 
                         });
+                    } else {
+                        quick_add_item()
                     }
                     cb(result);
                 }
@@ -1625,9 +1637,9 @@
             type: "post",
             data: {
                 last_id: (!show_only_searched) ? last_id : '',
-                id: $("#category_id").val(),
-                item_name: $("#item_name").val(),
-                brand_id: $("#brand_id").val(),
+                id: $("#get_category_id").val(),
+                item_name: $("#get_item_name").val(),
+                brand_id: $("#get_brand_id").val(),
             },
             beforeSend: function() {
                 $('.ajax-load').show();
@@ -1650,6 +1662,10 @@
         }).fail(function(jqXHR, ajaxOptions, thrownError) {
             alert('server not responding...');
         });
+    }
+
+    function quick_add_item() {
+        $('#quick_add_item').modal('toggle');
     }
     </script>
 </body>

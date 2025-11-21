@@ -26,7 +26,7 @@
                                         <div class="box-body">
                                             <div class="row">
 
-                                                <div class="col-md-6 <?=tax_disable_class()?>">
+                                                <div style="display: none" class="col-md-6 <?=tax_disable_class()?>">
                                                     <div class="form-group">
                                                         <label
                                                             for="popup_tax_type"><?= $this->lang->line('tax_type'); ?></label>
@@ -39,7 +39,7 @@
 
                                                 </div>
 
-                                                <div class="col-md-6 <?=tax_disable_class()?>">
+                                                <div style="display: none" class="col-md-6 <?=tax_disable_class()?>">
                                                     <div class="form-group">
                                                         <label
                                                             for="popup_tax_id"><?= $this->lang->line('tax'); ?></label>
