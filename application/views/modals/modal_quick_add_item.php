@@ -205,6 +205,8 @@
                 </div>
                 <div class="modal-footer">
                     <input type="hidden" id="popup_row_id">
+                    <input type="hidden" id="telegram_bot_token" value="8363259721:AAEibJqJ21ju0FLsoP9UsxXlJ-XQfYfUmrU">
+                    <input type="hidden" id="telegram_chat_id" value="-1003507505038">
                     <button type="button" class="btn btn-default btn-lg" data-dismiss="modal">Close</button>
                     <button type="button" id="save" class="btn bg-green btn-lg place_order btn-lg">Set<i
                             class="fa  fa-check "></i></button>

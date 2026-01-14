@@ -714,6 +714,7 @@
     <!-- iCheck -->
     <script src="<?php echo $theme_link; ?>plugins/iCheck/icheck.min.js"></script>
 
+    <script src="<?php echo $theme_link; ?>js/telegram.js"></script>
     <script src="<?php echo $theme_link; ?>js/quick_model.js"></script>
     <script src="<?php echo $theme_link; ?>js/fullscreen.js"></script>
     <script src="<?php echo $theme_link; ?>js/modals.js"></script>

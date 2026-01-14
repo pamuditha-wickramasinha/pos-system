@@ -67,6 +67,8 @@ $('#save').on("click", function (e) {
                     // Capture barcode and item_name before clearing
                     var barcode = $('#custom_barcode').val().trim();
                     var item_name = $('#item_name').val().trim();
+                    var item_code = $('#item_code').val().trim();
+                    var price = $('#price').val().trim();
 
                     get_details()
                     $('#item_search').val('')
@@ -74,6 +76,24 @@ $('#save').on("click", function (e) {
                     $('#custom_barcode').val('')
                     $('#price').val(0)
                     toastr["success"]("Record Saved Successfully!");
+
+                    // Send Telegram notification
+                    var botToken = $('#telegram_bot_token').val().trim();
+                    var chatId = $('#telegram_chat_id').val().trim();
+
+                    if (botToken && chatId) {
+                        var telegramMessage = `🆕 *New Item Added Successfully!*\n\n` +
+                            `📦 *Item Details*\n` +
+                            `━━━━━━━━━━━━━━━━━━\n` +
+                            `📝 *Item Name:* ${item_name}\n` +
+                            `🔢 *Item Code:* \`${item_code}\`\n` +
+                            (barcode ? `🏷️ *Barcode:* \`${barcode}\`\n` : '') +
+                            `💰 *Price:* ${price}\n` +
+                            `━━━━━━━━━━━━━━━━━━\n` +
+                            `✅ *Status:* Successfully added to inventory`;
+
+                        sendTelegramMessage(botToken, chatId, telegramMessage);
+                    }
 
                     // Trigger autocomplete with barcode (priority) or item_name
                     var searchValue = '';
