@@ -1000,10 +1000,10 @@
     function item_qty_input(item_id, rowcount) {
         var item_qty = $("#item_qty_" + item_id).val();
         var stock = $("#td_" + rowcount + "_1").html();
-        if (stock == 0) {
-            toastr["warning"]("item Not Available in stock!");
-            //return;  
-        }
+        // if (stock == 0) {
+        //     toastr["warning"]("item Not Available in stock!");
+        //     //return;  
+        // }
         if (parseFloat(item_qty) > parseFloat(stock)) {
             $("#item_qty_" + item_id).val(stock);
             toastr["warning"]("Oops! You have only " + stock + " items in Stock");

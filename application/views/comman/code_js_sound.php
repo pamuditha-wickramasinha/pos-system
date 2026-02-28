@@ -14,7 +14,7 @@
 
 <script type="text/javascript">
 <?php if($this->session->flashdata('success')!=''){ ?>
-      success_sound.play();
+      // success_sound.play();
 <?php } ?>
 <?php if($this->session->flashdata('failed')!=''){ ?>
       failed_sound.play();
