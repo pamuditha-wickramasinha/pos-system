@@ -115,7 +115,10 @@ class Items_model extends CI_Model {
 
 			$new_name = time();
 			$config['file_name'] = $new_name;
-			$config['upload_path']          = './uploads/items/';
+		$config['upload_path']          = './uploads/items/';
+			if (!is_dir('./uploads/items/')) {
+				mkdir('./uploads/items/', 0755, true);
+			}
 	        $config['allowed_types']        = 'jpg|png|jpeg';
 	        $config['max_size']             = 1024;
 	        $config['max_width']            = 1000;
@@ -278,6 +281,9 @@ class Items_model extends CI_Model {
 				$new_name = time();
 				$config['file_name'] = $new_name;
 				$config['upload_path']          = './uploads/items/';
+				if (!is_dir('./uploads/items/')) {
+					mkdir('./uploads/items/', 0755, true);
+				}
 		        $config['allowed_types']        = 'jpg|png';
 		        $config['max_size']             = 1024;
 		        $config['max_width']            = 1000;
