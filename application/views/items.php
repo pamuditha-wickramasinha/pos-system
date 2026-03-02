@@ -81,6 +81,8 @@
 
                             <?= form_open('#', array('class' => 'form', 'id' => 'items-form', 'enctype'=>'multipart/form-data', 'method'=>'POST'));?>
                             <input type="hidden" id="base_url" value="<?php echo $base_url;; ?>">
+                            <input type="hidden" id="initial_item_code" value="<?php echo $item_code; ?>">
+                            <input type="hidden" name="q_id" id="q_id" value="<?php echo (isset($q_id))?$q_id:''; ?>" />
                             <div class="box-body">
                                 <div class="row">
                                     <div class="form-group col-md-4">
@@ -89,6 +91,13 @@
                                         <input type="text" class="form-control" id="item_code" name="item_code"
                                             placeholder="" value="<?php print $item_code; ?>">
                                         <span id="item_code_msg" style="display:none" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label for="custom_barcode"><?= $this->lang->line('barcode'); ?></label>
+                                        <input type="text" class="form-control" id="custom_barcode"
+                                            name="custom_barcode" placeholder=""
+                                            value="<?php print $custom_barcode; ?>">
+                                        <span id="custom_barcode_msg" style="display:none" class="text-danger"></span>
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label for="item_code">Item Name(Siglish)<span
@@ -235,13 +244,6 @@
                                                 id="expire_date" name="expire_date" value="<?= $expire_date;?>">
                                         </div>
                                         <span id="expire_date_msg" style="display:none" class="text-danger"></span>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label for="custom_barcode"><?= $this->lang->line('barcode'); ?></label>
-                                        <input type="text" class="form-control" id="custom_barcode"
-                                            name="custom_barcode" placeholder=""
-                                            value="<?php print $custom_barcode; ?>">
-                                        <span id="custom_barcode_msg" style="display:none" class="text-danger"></span>
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label for="custom_barcode"><?= $this->lang->line('description'); ?></label>

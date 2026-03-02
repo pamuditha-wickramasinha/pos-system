@@ -234,4 +234,15 @@ class Items extends MY_Controller {
 	public function getItems($id=''){
 		echo $this->items->getItemsJson($id);
 	}
+
+	public function get_item_details_by_barcode(){
+		$barcode=$this->input->post('barcode');
+		$this->load->model('items_model');
+		$result=$this->items_model->get_details_by_barcode($barcode);
+		if($result){
+			echo json_encode($result);
+		}else{
+			echo "null";
+		}
+	}
 }

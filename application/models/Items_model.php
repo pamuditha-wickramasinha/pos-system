@@ -263,6 +263,13 @@ class Items_model extends CI_Model {
 			return $data;
 		}
 	}
+	public function get_details_by_barcode($barcode){
+		$query=$this->db->query("select * from db_items where upper(custom_barcode)=upper('$barcode')");
+		if($query->num_rows()>0){
+			return $query->row();
+		}
+		return null;
+	}
 	public function update_items(){
 		//Filtering XSS and html escape from user inputs 
 		extract($this->security->xss_clean(html_escape(array_merge($this->data,$_POST))));
