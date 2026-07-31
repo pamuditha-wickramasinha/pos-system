@@ -5,7 +5,7 @@ $(document).on("click", "#save,#update", function (e) {
 
 	function check_field(id) {
 
-		if (!$("#" + id).val().trim()) //Also check Others????
+		if (!$("#" + id).val()?.trim()) //Also check Others????
 		{
 
 			$('#' + id + '_msg').fadeIn(200).show().html('Required Field').addClass('required');
@@ -363,13 +363,16 @@ function delete_stock_entry(entry_id) {
 }
 
 //Barcode search
-$("#custom_barcode").on("input", function () {
+$("#custom_barcode").on("change", function () {
 	var barcode = $(this).val().trim();
-	var base_url = $("#base_url").val().trim();
-	if (barcode == '') {
+	if (barcode == "") {
 		reset_item_form();
 		return;
 	}
+
+
+	var base_url = $("#base_url").val().trim();
+
 	$.post(base_url + "items/get_item_details_by_barcode", { barcode: barcode }, function (result) {
 		if (result != 'null') {
 			var data = JSON.parse(result);
@@ -403,8 +406,7 @@ $("#custom_barcode").on("input", function () {
 
 			toastr["success"]("Item Details Loaded!");
 		} else {
-			$("#q_id").val('');
-			$("#save,#update").attr('id', 'save').html('Save');
+			reset_item_form();
 		}
 	});
 });
