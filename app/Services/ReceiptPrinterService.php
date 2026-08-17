@@ -1,0 +1,129 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Printer;
+use App\Models\Sale;
+use Mike42\Escpos\EscposImage;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\Printer as EscposPrinter;
+use Throwable;
+
+/**
+ * Gets a Sale's receipt to a physical printer, over one of three delivery paths
+ * (matching `printers.connection_type`):
+ *  - network:       printer has its own IP, we open a raw socket to it ourselves.
+ *  - windows_local:  printer is shared on the Windows PC running this server; we hand the
+ *                    job to the Windows print spooler ourselves (see WindowsPrintConnector).
+ *  - rawbt:          printer is attached to the customer's own device (phone via OTG/BT/WiFi).
+ *                    We can't reach it from the server, so buildRawBytes() below returns the
+ *                    raw ESC/POS payload for the browser to hand to the RawBT Android app.
+ *
+ * The receipt itself is always sent as a *picture* (see ReceiptImageRenderer), not as ESC/POS
+ * text commands. Every one of these paths ends with raw ESC/POS bytes going straight to a
+ * printer's own firmware, and that firmware's built-in font table has no Sinhala glyphs -
+ * text commands would print Sinhala as "?????" regardless of which path got them there.
+ * A raster image sidesteps that entirely: the printer just reproduces pixels.
+ */
+class ReceiptPrinterService
+{
+    public function __construct(protected ReceiptImageRenderer $renderer) {}
+
+    /**
+     * Print directly from the server. Only valid for 'network' and 'windows_local' printers.
+     *
+     * @return array{status: string, message?: string}
+     */
+    public function printFromServer(Sale $sale, Printer $printer): array
+    {
+        return $this->sendFromServer($printer, fn (EscposPrinter $escpos) => $this->printImage($escpos, $printer, $this->renderer->renderToPng($sale, $printer)));
+    }
+
+    /**
+     * Build the raw ESC/POS byte string for a sale, for connection types the browser
+     * itself must deliver (e.g. 'rawbt').
+     */
+    public function buildRawBytes(Sale $sale, Printer $printer): string
+    {
+        return $this->buildBytes($printer, fn (EscposPrinter $escpos) => $this->printImage($escpos, $printer, $this->renderer->renderToPng($sale, $printer)));
+    }
+
+    /**
+     * @return array{status: string, message?: string}
+     */
+    public function printTestFromServer(Printer $printer): array
+    {
+        return $this->sendFromServer($printer, fn (EscposPrinter $escpos) => $this->printImage($escpos, $printer, $this->renderer->renderTestToPng($printer)));
+    }
+
+    public function buildTestRawBytes(Printer $printer): string
+    {
+        return $this->buildBytes($printer, fn (EscposPrinter $escpos) => $this->printImage($escpos, $printer, $this->renderer->renderTestToPng($printer)));
+    }
+
+    /**
+     * @param  callable(EscposPrinter): void  $draw
+     * @return array{status: string, message?: string}
+     */
+    protected function sendFromServer(Printer $printer, callable $draw): array
+    {
+        if (! in_array($printer->connection_type, ['network', 'windows_local'], true)) {
+            return ['status' => 'failed', 'message' => 'This printer must be printed from the browser, not the server.'];
+        }
+
+        try {
+            $connector = $printer->connection_type === 'network'
+                ? new NetworkPrintConnector((string) $printer->ip_address, (int) ($printer->port ?: 9100))
+                : new WindowsPrintConnector((string) $printer->windows_printer_name);
+
+            $escpos = new EscposPrinter($connector);
+            $draw($escpos);
+            $escpos->close();
+
+            return ['status' => 'success'];
+        } catch (Throwable $e) {
+            return ['status' => 'failed', 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @param  callable(EscposPrinter): void  $draw
+     */
+    protected function buildBytes(Printer $printer, callable $draw): string
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'escpos');
+
+        try {
+            $connector = new FilePrintConnector($tmpFile);
+            $escpos = new EscposPrinter($connector);
+            $draw($escpos);
+            $escpos->close();
+
+            return (string) file_get_contents($tmpFile);
+        } finally {
+            @unlink($tmpFile);
+        }
+    }
+
+    protected function printImage(EscposPrinter $escpos, Printer $printer, string $tmpPng): void
+    {
+        try {
+            $escpos->initialize();
+            $escpos->setJustification(EscposPrinter::JUSTIFY_CENTER);
+            $escpos->bitImage(EscposImage::load($tmpPng));
+            $escpos->feed(2);
+
+            if ($printer->cut_paper) {
+                $escpos->cut();
+            }
+
+            if ($printer->open_cash_drawer) {
+                $escpos->pulse();
+            }
+        } finally {
+            @unlink($tmpPng);
+        }
+    }
+}
