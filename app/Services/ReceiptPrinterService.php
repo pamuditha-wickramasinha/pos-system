@@ -7,19 +7,19 @@ use App\Models\Sale;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
-use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\Printer as EscposPrinter;
 use Throwable;
 
 /**
- * Gets a Sale's receipt to a physical printer, over one of three delivery paths
+ * Gets a Sale's receipt to a physical printer, over one of two delivery paths
  * (matching `printers.connection_type`):
- *  - network:       printer has its own IP, we open a raw socket to it ourselves.
- *  - windows_local:  printer is shared on the Windows PC running this server; we hand the
- *                    job to the Windows print spooler ourselves (see WindowsPrintConnector).
- *  - rawbt:          printer is attached to the customer's own device (phone via OTG/BT/WiFi).
- *                    We can't reach it from the server, so buildRawBytes() below returns the
- *                    raw ESC/POS payload for the browser to hand to the RawBT Android app.
+ *  - network:      printer has its own IP, we open a raw socket to it ourselves. Needs the
+ *                  server to be able to reach that IP, so it suits a printer on the same
+ *                  LAN as the server rather than one in a shop behind NAT.
+ *  - local_agent:  printer is on the USB port of the Windows counter PC while this app is
+ *                  hosted elsewhere. We cannot reach it at all, so buildRawBytes() below
+ *                  only builds the payload; the browser on that PC relays it to a loopback
+ *                  agent which spools it to the printer. See agent/README.md.
  *
  * The receipt itself is always sent as a *picture* (see ReceiptImageRenderer), not as ESC/POS
  * text commands. Every one of these paths ends with raw ESC/POS bytes going straight to a
@@ -32,7 +32,7 @@ class ReceiptPrinterService
     public function __construct(protected ReceiptImageRenderer $renderer) {}
 
     /**
-     * Print directly from the server. Only valid for 'network' and 'windows_local' printers.
+     * Print directly from the server. Only valid for 'network' printers.
      *
      * @return array{status: string, message?: string}
      */
@@ -43,7 +43,7 @@ class ReceiptPrinterService
 
     /**
      * Build the raw ESC/POS byte string for a sale, for connection types the browser
-     * itself must deliver (e.g. 'rawbt').
+     * itself must deliver ('local_agent').
      */
     public function buildRawBytes(Sale $sale, Printer $printer): string
     {
@@ -69,14 +69,12 @@ class ReceiptPrinterService
      */
     protected function sendFromServer(Printer $printer, callable $draw): array
     {
-        if (! in_array($printer->connection_type, ['network', 'windows_local'], true)) {
+        if ($printer->connection_type !== 'network') {
             return ['status' => 'failed', 'message' => 'This printer must be printed from the browser, not the server.'];
         }
 
         try {
-            $connector = $printer->connection_type === 'network'
-                ? new NetworkPrintConnector((string) $printer->ip_address, (int) ($printer->port ?: 9100))
-                : new WindowsPrintConnector((string) $printer->windows_printer_name);
+            $connector = new NetworkPrintConnector((string) $printer->ip_address, (int) ($printer->port ?: 9100));
 
             $escpos = new EscposPrinter($connector);
             $draw($escpos);

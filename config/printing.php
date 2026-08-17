@@ -35,4 +35,18 @@ return [
     */
     'browser_timeout' => 30,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Local print agent port
+    |--------------------------------------------------------------------------
+    |
+    | Loopback port that the counter PC's print agent listens on, for printers
+    | with connection_type = local_agent. The browser on that PC posts the
+    | ESC/POS bytes to http://127.0.0.1:<port>/print. Must match the -Port the
+    | agent was started with (see agent/README.md).
+    |
+    */
+
+    'agent_port' => (int) env('PRINT_AGENT_PORT', 9110),
+
 ];

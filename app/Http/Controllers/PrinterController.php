@@ -82,11 +82,12 @@ class PrinterController extends Controller
     {
         return [
             'name' => 'required|string|max:255',
-            'connection_type' => 'required|in:network,windows_local,rawbt',
+            'connection_type' => 'required|in:network,local_agent',
             'paper_width' => 'required|in:58,80',
             'ip_address' => 'required_if:connection_type,network',
             'port' => 'nullable|integer|min:1|max:65535',
-            'windows_printer_name' => 'required_if:connection_type,windows_local',
+            // Resolved on the counter PC by the print agent, not on this server.
+            'windows_printer_name' => 'required_if:connection_type,local_agent',
         ];
     }
 
@@ -97,7 +98,7 @@ class PrinterController extends Controller
             'connection_type' => $request->input('connection_type'),
             'ip_address' => $request->input('connection_type') === 'network' ? $request->input('ip_address') : null,
             'port' => $request->input('connection_type') === 'network' ? ($request->input('port') ?: 9100) : null,
-            'windows_printer_name' => $request->input('connection_type') === 'windows_local' ? $request->input('windows_printer_name') : null,
+            'windows_printer_name' => $request->input('connection_type') === 'local_agent' ? $request->input('windows_printer_name') : null,
             'paper_width' => (int) $request->input('paper_width'),
             'cut_paper' => $request->boolean('cut_paper'),
             'open_cash_drawer' => $request->boolean('open_cash_drawer'),
@@ -124,18 +125,11 @@ class PrinterController extends Controller
 
         $printer = new Printer($this->connectionData($request));
 
-        if (in_array($printer->connection_type, ['network', 'windows_local'], true)) {
+        if ($printer->connection_type === 'network') {
             return response()->json($service->printTestFromServer($printer));
         }
 
-        $bytes = $service->buildTestRawBytes($printer);
-
-        return response()->json([
-            'status' => 'dispatch',
-            'connection_type' => $printer->connection_type,
-            'printer_name' => $printer->name,
-            'payload' => base64_encode($bytes),
-        ]);
+        return response()->json($this->dispatchToBrowser($printer, $service->buildTestRawBytes($printer)));
     }
 
     public function updateStatus(Request $request): Response
@@ -158,8 +152,8 @@ class PrinterController extends Controller
 
     /**
      * Called right after a POS sale is saved. Either prints straight from the server
-     * (network / windows_local) or hands raw ESC/POS bytes back to the browser to
-     * dispatch itself (rawbt).
+     * (network) or hands the raw ESC/POS bytes back to the browser to dispatch
+     * itself (local_agent).
      */
     public function printSale(Sale $sale, Printer $printer, Request $request, ReceiptPrinterService $service): JsonResponse
     {
@@ -167,7 +161,7 @@ class PrinterController extends Controller
             abort(403);
         }
 
-        if (in_array($printer->connection_type, ['network', 'windows_local'], true)) {
+        if ($printer->connection_type === 'network') {
             $result = $service->printFromServer($sale, $printer);
 
             PrintJob::create([
@@ -182,37 +176,43 @@ class PrinterController extends Controller
             return response()->json($result);
         }
 
-        // rawbt: the server can't reach this printer, hand the bytes back to the browser.
-        $bytes = $service->buildRawBytes($sale, $printer);
-
-        return response()->json([
-            'status' => 'dispatch',
-            'connection_type' => $printer->connection_type,
-            'printer_name' => $printer->name,
-            'payload' => base64_encode($bytes),
-        ]);
+        // local_agent: the server can't reach this printer, hand the bytes back
+        // to the browser on the device that can.
+        return response()->json($this->dispatchToBrowser($printer, $service->buildRawBytes($sale, $printer)));
     }
 
     public function testPrint(Printer $printer, Request $request, ReceiptPrinterService $service): JsonResponse
     {
         $this->authorize('printers_edit');
 
-        if (in_array($printer->connection_type, ['network', 'windows_local'], true)) {
+        if ($printer->connection_type === 'network') {
             return response()->json($service->printTestFromServer($printer));
         }
 
-        $bytes = $service->buildTestRawBytes($printer);
-
-        return response()->json([
-            'status' => 'dispatch',
-            'connection_type' => $printer->connection_type,
-            'printer_name' => $printer->name,
-            'payload' => base64_encode($bytes),
-        ]);
+        return response()->json($this->dispatchToBrowser($printer, $service->buildTestRawBytes($printer)));
     }
 
     /**
-     * The browser reports back here after it dispatched a job itself (rawbt),
+     * Response telling the browser to deliver these bytes itself, because the server
+     * has no path to the printer. 'printer_target' is only meaningful for local_agent,
+     * where the agent on the counter PC needs to know which Windows printer to spool to.
+     *
+     * @return array<string, mixed>
+     */
+    protected function dispatchToBrowser(Printer $printer, string $bytes): array
+    {
+        return [
+            'status' => 'dispatch',
+            'connection_type' => $printer->connection_type,
+            'printer_name' => $printer->name,
+            'printer_target' => $printer->windows_printer_name,
+            'agent_port' => (int) config('printing.agent_port', 9110),
+            'payload' => base64_encode($bytes),
+        ];
+    }
+
+    /**
+     * The browser reports back here after it dispatched a job itself (local_agent),
      * since the server has no way to know whether it actually printed.
      */
     public function logResult(Request $request): Response

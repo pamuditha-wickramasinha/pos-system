@@ -2,13 +2,12 @@
 
 function toggle_connection_fields() {
 	var type = $("#connection_type").val();
-	$(".field-network, .field-windows_local, .field-rawbt").hide();
+	$(".field-network, .field-local_agent").hide();
 	$(".field-" + type).show();
 
 	var help = {
-		network: 'The printer must have a static IP on your WiFi/LAN and accept raw ESC/POS printing (usually port 9100). Works from any PC or phone on the network.',
-		windows_local: 'The printer must be shared on this Windows PC (right click the printer in Windows &rarr; Printer properties &rarr; Sharing &rarr; Share this printer). This server will print to it directly, from any device.',
-		rawbt: 'Used only from the phone the printer is physically attached to. Install the RawBT app on that phone, connect the printer inside RawBT, then click "Use on This Device" on the printers list from that phone\'s browser.'
+		local_agent: 'For a USB printer plugged into the counter PC. The browser on that PC relays each receipt to the Print Agent running on it, so the server never needs to reach the printer.',
+		network: 'The printer must have a static IP and accept raw ESC/POS printing (usually port 9100). The server connects to it directly, so the server must be able to reach that IP - a hosted server generally cannot reach a shop LAN.'
 	};
 	$("#connection_type_help").text(help[type] || '');
 }
@@ -24,8 +23,8 @@ $('#test_connection').on("click", function () {
 		toastr["warning"]("Enter the Printer IP Address first!");
 		return;
 	}
-	if ($("#connection_type").val() === 'windows_local' && !$("#windows_printer_name").val().trim()) {
-		toastr["warning"]("Enter the Shared Printer Name first!");
+	if ($("#connection_type").val() === 'local_agent' && !$("#windows_printer_name").val().trim()) {
+		toastr["warning"]("Enter the Windows Printer Name first!");
 		return;
 	}
 
@@ -146,7 +145,7 @@ function test_print(printerId) {
 }
 
 function use_on_this_device(printerId, connectionType, name) {
-	if (connectionType === 'rawbt' && !confirm("This will make THIS device (browser) send print jobs to RawBT for '" + name + "'. Only do this on the phone the printer is physically connected to. Continue?")) {
+	if (connectionType === 'local_agent' && !confirm("This will make THIS PC send print jobs to its own Print Agent for '" + name + "'. Only do this on the PC the printer is plugged into. Continue?")) {
 		return;
 	}
 	PrinterBridge.setDevicePrinter({ id: printerId, connection_type: connectionType, name: name });

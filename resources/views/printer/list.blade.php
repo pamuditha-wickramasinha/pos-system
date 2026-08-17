@@ -46,19 +46,15 @@
                                 <td>
                                     @if ($p->connection_type === 'network')
                                         <span class="label label-primary">Network (WiFi/LAN)</span>
-                                    @elseif ($p->connection_type === 'windows_local')
-                                        <span class="label label-default">Windows / USB (this PC)</span>
                                     @else
-                                        <span class="label label-info">Mobile (RawBT)</span>
+                                        <span class="label label-warning">Windows / USB (Print Agent)</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if ($p->connection_type === 'network')
                                         {{ $p->ip_address }}:{{ $p->port }}
-                                    @elseif ($p->connection_type === 'windows_local')
-                                        {{ $p->windows_printer_name }}
                                     @else
-                                        <span class="text-muted">set on device</span>
+                                        {{ $p->windows_printer_name }}
                                     @endif
                                 </td>
                                 <td>{{ $p->paper_width }}mm</td>

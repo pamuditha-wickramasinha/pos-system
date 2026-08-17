@@ -11,6 +11,9 @@ return new class extends Migration
         Schema::create('printers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            // NOTE: windows_local and rawbt were later dropped, and local_agent added, by
+            // 2026_08_17_100000_drop_windows_local_and_rawbt_connection_types. This is the
+            // original shape - see that migration for the types in use now.
             // network       = printer has its own IP, server sends ESC/POS bytes over TCP (works from any device)
             // windows_local = USB printer shared on the Windows PC that runs this server; server prints
             //                 directly via the Windows print spooler (works from any device, since the

@@ -132,8 +132,8 @@ function save(print = false, pay_all = false) {
 							afterPrint();
 						}
 						else if (PrinterBridge.getDevicePrinter()) {
-							// A printer is configured for this device (PC via network/shared-USB,
-							// or phone via RawBT) - print silently, no popup, no manual printer pick.
+							// A printer is configured for this device (network, or USB via the
+							// local print agent) - print silently, no popup, no printer pick.
 							PrinterBridge.printSale(base_url, result[1], function (printResult) {
 								if (printResult.status === 'success') {
 									toastr['success'](printResult.message || 'Receipt printed.');

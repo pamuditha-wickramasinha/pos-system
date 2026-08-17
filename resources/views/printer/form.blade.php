@@ -32,9 +32,8 @@
                             <label for="connection_type" class="col-sm-2 control-label">Connection Type<label class="text-danger">*</label></label>
                             <div class="col-sm-4">
                                 <select class="form-control input-sm" id="connection_type" name="connection_type" onchange="toggle_connection_fields()">
+                                    <option value="local_agent" @selected(($printer->connection_type ?? 'local_agent') === 'local_agent')>Windows / USB on the counter PC (via Print Agent)</option>
                                     <option value="network" @selected(($printer->connection_type ?? '') === 'network')>Network (WiFi/LAN printer with its own IP)</option>
-                                    <option value="windows_local" @selected(($printer->connection_type ?? '') === 'windows_local')>Windows / USB (shared on this PC)</option>
-                                    <option value="rawbt" @selected(($printer->connection_type ?? '') === 'rawbt')>Mobile - USB-OTG / Bluetooth / WiFi (via RawBT app)</option>
                                 </select>
                                 <p class="help-block" id="connection_type_help"></p>
                             </div>
@@ -53,18 +52,18 @@
                             </div>
                         </div>
 
-                        <div class="form-group field-windows_local">
-                            <label for="windows_printer_name" class="col-sm-2 control-label">Shared Printer Name</label>
+                        <div class="form-group field-local_agent">
+                            <label for="windows_printer_name" class="col-sm-2 control-label">Windows Printer Name</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control input-sm" id="windows_printer_name" name="windows_printer_name" placeholder="e.g. POS58" value="{{ $printer->windows_printer_name ?? '' }}">
-                                <p class="help-block">Must be shared in Windows (Printer Properties &rarr; Sharing &rarr; Share this printer)</p>
+                                <input type="text" class="form-control input-sm" id="windows_printer_name" name="windows_printer_name" placeholder="e.g. XP-80C" value="{{ $printer->windows_printer_name ?? '' }}">
+                                <p class="help-block">Exactly as it appears in Windows Settings &rarr; Printers &amp; scanners on the counter PC. No sharing needed.</p>
                             </div>
                         </div>
 
-                        <div class="form-group field-rawbt">
+                        <div class="form-group field-local_agent">
                             <p class="col-sm-2"></p>
                             <div class="col-sm-6">
-                                <p class="help-block">Install the free <strong>RawBT</strong> app on the Android device and pair/connect the printer (OTG, Bluetooth or WiFi) inside that app first. No IP/name needed here &mdash; this device will be picked with the "Use on This Device" button on the printers list.</p>
+                                <p class="help-block">The <strong>POS Print Agent</strong> must be running on the counter PC &mdash; it is what passes receipts to the USB printer, because a web page cannot reach USB hardware on its own. See <code>agent/README.md</code> for the one-time setup. Then click "Use on This Device" on the printers list, from that PC's browser.</p>
                             </div>
                         </div>
 
