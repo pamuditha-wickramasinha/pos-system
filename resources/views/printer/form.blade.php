@@ -57,7 +57,7 @@
                             <label for="windows_printer_name" class="col-sm-2 control-label">Shared Printer Name</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control input-sm" id="windows_printer_name" name="windows_printer_name" placeholder="e.g. POS58" value="{{ $printer->windows_printer_name ?? '' }}">
-                                <p class="help-block">Must be shared in Windows (Printer Properties &rarr; Sharing &rarr; Share this printer) so <code>\\localhost\&lt;name&gt;</code> works.</p>
+                                <p class="help-block">Must be shared in Windows (Printer Properties &rarr; Sharing &rarr; Share this printer)</p>
                             </div>
                         </div>
 
