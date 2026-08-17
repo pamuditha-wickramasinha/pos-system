@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Holds a printer's agent token - per-PC secret, never commit it.
+# Copy agent/agent-config.example.json on each counter PC instead.
+/agent/agent-config.json

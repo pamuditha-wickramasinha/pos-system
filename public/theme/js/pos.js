@@ -137,6 +137,8 @@ function save(print = false, pay_all = false) {
 							PrinterBridge.printSale(base_url, result[1], function (printResult) {
 								if (printResult.status === 'success') {
 									toastr['success'](printResult.message || 'Receipt printed.');
+								} else if (printResult.status === 'pending') {
+									toastr['warning'](printResult.message);
 								} else {
 									toastr['error']('Print failed: ' + (printResult.message || 'Unknown error') + ' You can reprint from the Sales list.');
 								}

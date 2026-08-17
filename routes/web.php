@@ -15,6 +15,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\PaymentTypeController;
 use App\Http\Controllers\PosController;
+use App\Http\Controllers\PrintAgentController;
 use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PurchaseReturnController;
@@ -33,6 +34,15 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
+
+/*
+ * Print agent API. No session and no CSRF token - the caller is a background process on
+ * the counter PC, authenticated by its printer's agent_token (see PrintAgentController).
+ */
+Route::prefix('print-agent')->name('print-agent.')->group(function () {
+    Route::post('/jobs', [PrintAgentController::class, 'claim'])->name('claim');
+    Route::post('/jobs/{printJob}/result', [PrintAgentController::class, 'result'])->name('result');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -455,12 +465,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [PrinterController::class, 'index'])->name('index');
         Route::get('/add', [PrinterController::class, 'add'])->name('add');
         Route::get('/edit/{printer}', [PrinterController::class, 'edit'])->name('edit');
+        Route::get('/agent_setup/{printer}', [PrinterController::class, 'agentSetup'])->name('agent_setup');
         Route::post('/save_or_update', [PrinterController::class, 'saveOrUpdate'])->name('save_or_update');
         Route::post('/update_status', [PrinterController::class, 'updateStatus'])->name('update_status');
         Route::post('/delete_printer', [PrinterController::class, 'destroy'])->name('destroy');
         Route::post('/print_sale/{sale}/{printer}', [PrinterController::class, 'printSale'])->name('print_sale');
         Route::post('/test_print/{printer}', [PrinterController::class, 'testPrint'])->name('test_print');
         Route::post('/test_connection', [PrinterController::class, 'testConnection'])->name('test_connection');
-        Route::post('/log_result', [PrinterController::class, 'logResult'])->name('log_result');
+        Route::get('/job_status/{printJob}', [PrinterController::class, 'jobStatus'])->name('job_status');
     });
 });

@@ -2,19 +2,16 @@
     POS Launcher
     ------------
     One double-click to open the till: starts the print agent if it is not already
-    running, waits until it actually answers, then opens the POS in the browser.
+    running, then opens the POS in the browser.
 
-    Don't run this directly - double-click "Start POS.cmd", which holds your URL
-    and port settings. See agent/README.md.
+    Don't run this directly - double-click "Start POS.cmd", which holds your settings.
+    See agent/README.md.
 #>
 
 param(
-    # Address of the hosted POS, e.g. http://76.13.247.65/pos
+    # Address of the POS page to open, e.g. http://76.13.247.65/pos
     [Parameter(Mandatory = $true)]
     [string] $Url,
-
-    # Must match the port the agent listens on.
-    [int] $Port = 9110,
 
     # Open Chrome/Edge as a bare app window (no address bar or tabs), like a till.
     [switch] $Kiosk
@@ -22,13 +19,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-function Test-AgentUp([int] $port) {
-    try {
-        $response = Invoke-WebRequest -Uri "http://127.0.0.1:$port/ping" -UseBasicParsing -TimeoutSec 2
-        return $response.StatusCode -eq 200
-    } catch {
-        return $false
-    }
+function Get-RunningAgent {
+    # Matched on the script name in the command line: the agent is a powershell.exe like
+    # any other, so there is nothing else to distinguish it by. $PID is excluded because
+    # this launcher's own command line can contain the same text.
+    $me = $PID
+
+    return @(Get-WmiObject Win32_Process -Filter "Name='powershell.exe'" |
+        Where-Object { $_.ProcessId -ne $me -and $_.CommandLine -like '*pos-print-agent.ps1*' })
 }
 
 function Find-Browser {
@@ -54,41 +52,42 @@ Write-Host ""
 
 # ---- 1. Print agent ------------------------------------------------------------
 
-if (Test-AgentUp $Port) {
-    Write-Host "  [ok]  Print agent already running on port $Port." -ForegroundColor Green
+if ((Get-RunningAgent).Count -gt 0) {
+    Write-Host "  [ok]  Print agent already running." -ForegroundColor Green
 } else {
     $agentScript = Join-Path $PSScriptRoot 'pos-print-agent.ps1'
+    $configFile = Join-Path $PSScriptRoot 'agent-config.json'
 
     if (-not (Test-Path -LiteralPath $agentScript)) {
         Write-Host "  [!!]  Cannot find pos-print-agent.ps1 next to this launcher." -ForegroundColor Red
         Write-Host "        Keep the whole 'agent' folder together." -ForegroundColor Yellow
-        Start-Sleep -Seconds 10
+        Start-Sleep -Seconds 15
         exit 1
     }
 
-    Write-Host "  [..]  Starting print agent on port $Port..." -ForegroundColor Gray
+    if (-not (Test-Path -LiteralPath $configFile)) {
+        Write-Host "  [!!]  agent-config.json is missing - the agent needs the server URL" -ForegroundColor Red
+        Write-Host "        and this printer's Agent Token." -ForegroundColor Red
+        Write-Host "        Get them from Settings -> Printers -> Agent Setup in the POS." -ForegroundColor Yellow
+        Start-Sleep -Seconds 15
+        exit 1
+    }
+
+    Write-Host "  [..]  Starting print agent..." -ForegroundColor Gray
 
     # Minimised rather than hidden, so the log stays reachable from the taskbar when
     # someone needs to see why a receipt did not come out.
     Start-Process -FilePath 'powershell.exe' `
-        -ArgumentList '-ExecutionPolicy', 'Bypass', '-NoProfile', '-File', "`"$agentScript`"", '-Port', $Port `
+        -ArgumentList '-ExecutionPolicy', 'Bypass', '-NoProfile', '-File', "`"$agentScript`"" `
         -WindowStyle Minimized | Out-Null
 
-    # Starting the process is not the same as it being able to accept a job, so wait
-    # for a real answer before handing the browser a page that might print instantly.
-    $ready = $false
+    Start-Sleep -Seconds 2
 
-    for ($i = 0; $i -lt 20; $i++) {
-        Start-Sleep -Milliseconds 500
-        if (Test-AgentUp $Port) { $ready = $true; break }
-    }
-
-    if ($ready) {
-        Write-Host "  [ok]  Print agent is up." -ForegroundColor Green
+    if ((Get-RunningAgent).Count -gt 0) {
+        Write-Host "  [ok]  Print agent started." -ForegroundColor Green
     } else {
-        Write-Host "  [!!]  The print agent did not respond on port $Port." -ForegroundColor Red
-        Write-Host "        Opening the POS anyway - receipts will not print until it is fixed." -ForegroundColor Yellow
-        Write-Host "        Check the minimised agent window for the reason." -ForegroundColor Yellow
+        Write-Host "  [!!]  The print agent stopped straight away." -ForegroundColor Red
+        Write-Host "        Run start-agent.cmd to see why - most likely a bad token or URL." -ForegroundColor Yellow
     }
 }
 
@@ -96,16 +95,16 @@ if (Test-AgentUp $Port) {
 
 Write-Host "  [..]  Opening $Url" -ForegroundColor Gray
 
-if ($Kiosk) {
-    $browser = Find-Browser
+$browser = Find-Browser
 
-    if ($browser) {
-        Start-Process -FilePath $browser -ArgumentList "--app=$Url" | Out-Null
-    } else {
-        Write-Host "  [!!]  No Chrome or Edge found for app mode; using the default browser." -ForegroundColor Yellow
-        Start-Process $Url | Out-Null
-    }
+if ($Kiosk -and $browser) {
+    # --app gives a bare window with no address bar or tabs, so staff cannot browse away.
+    Start-Process -FilePath $browser -ArgumentList "--app=$Url" | Out-Null
 } else {
+    if ($Kiosk) {
+        Write-Host "  [!!]  No Chrome or Edge found for app mode; using the default browser." -ForegroundColor Yellow
+    }
+
     Start-Process $Url | Out-Null
 }
 

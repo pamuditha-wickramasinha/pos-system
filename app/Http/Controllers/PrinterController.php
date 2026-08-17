@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\PrintJob;
 use App\Models\Printer;
 use App\Models\Sale;
+use App\Services\PrintQueue;
 use App\Services\ReceiptPrinterService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PrinterController extends Controller
@@ -71,11 +73,31 @@ class PrinterController extends Controller
         $this->authorize('printers_add');
 
         $data['status'] = true;
+        // The agent authenticates with this and nothing else, so it is generated here
+        // rather than being anything a user picks, and never regenerated on update.
+        $data['agent_token'] = Str::random(48);
         Printer::create($data);
 
         session()->flash('success', 'Success!! New Printer Added Successfully!');
 
         return response('success');
+    }
+
+    /**
+     * Shows the agent-config.json the counter PC needs, including the printer's token.
+     */
+    public function agentSetup(Printer $printer): View
+    {
+        $this->authorize('printers_edit');
+
+        return view('printer.agent-setup', [
+            'page_title' => 'Agent Setup',
+            'printer' => $printer,
+            'config' => json_encode([
+                'server_url' => rtrim(url('/'), '/'),
+                'token' => $printer->agent_token,
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+        ]);
     }
 
     protected function connectionRules(): array
@@ -108,8 +130,7 @@ class PrinterController extends Controller
 
     /**
      * Test the connection details currently typed into the add/edit form, before the
-     * printer is even saved. Same dispatch shape as testPrint() below, just against an
-     * unpersisted Printer instance built from the posted fields.
+     * printer is even saved.
      */
     public function testConnection(Request $request, ReceiptPrinterService $service): JsonResponse
     {
@@ -129,7 +150,12 @@ class PrinterController extends Controller
             return response()->json($service->printTestFromServer($printer));
         }
 
-        return response()->json($this->dispatchToBrowser($printer, $service->buildTestRawBytes($printer)));
+        // A local_agent job has to be queued against a saved printer, because the agent
+        // finds its work by the printer's token - which does not exist until it is saved.
+        return response()->json([
+            'status' => 'failed',
+            'message' => 'Save the printer first, then use Test Print from the printers list.',
+        ]);
     }
 
     public function updateStatus(Request $request): Response
@@ -152,10 +178,9 @@ class PrinterController extends Controller
 
     /**
      * Called right after a POS sale is saved. Either prints straight from the server
-     * (network) or hands the raw ESC/POS bytes back to the browser to dispatch
-     * itself (local_agent).
+     * (network) or queues the job for the counter PC's agent to collect (local_agent).
      */
-    public function printSale(Sale $sale, Printer $printer, Request $request, ReceiptPrinterService $service): JsonResponse
+    public function printSale(Sale $sale, Printer $printer, Request $request, PrintQueue $queue, ReceiptPrinterService $service): JsonResponse
     {
         if (! $request->user()->can('sales_add') && ! $request->user()->can('sales_edit')) {
             abort(403);
@@ -176,12 +201,12 @@ class PrinterController extends Controller
             return response()->json($result);
         }
 
-        // local_agent: the server can't reach this printer, hand the bytes back
-        // to the browser on the device that can.
-        return response()->json($this->dispatchToBrowser($printer, $service->buildRawBytes($sale, $printer)));
+        $job = $queue->queueSale($sale, $printer, $request->user()->id, $request->input('device_label'));
+
+        return $this->queuedResponse($job);
     }
 
-    public function testPrint(Printer $printer, Request $request, ReceiptPrinterService $service): JsonResponse
+    public function testPrint(Printer $printer, Request $request, PrintQueue $queue, ReceiptPrinterService $service): JsonResponse
     {
         $this->authorize('printers_edit');
 
@@ -189,47 +214,33 @@ class PrinterController extends Controller
             return response()->json($service->printTestFromServer($printer));
         }
 
-        return response()->json($this->dispatchToBrowser($printer, $service->buildTestRawBytes($printer)));
+        $job = $queue->queueTest($printer, $request->user()->id, $request->input('device_label'));
+
+        return $this->queuedResponse($job);
     }
 
     /**
-     * Response telling the browser to deliver these bytes itself, because the server
-     * has no path to the printer. 'printer_target' is only meaningful for local_agent,
-     * where the agent on the counter PC needs to know which Windows printer to spool to.
-     *
-     * @return array<string, mixed>
+     * Whether a queued job actually printed is only known once the agent reports back,
+     * so the browser polls this until the job leaves 'pending'.
      */
-    protected function dispatchToBrowser(Printer $printer, string $bytes): array
+    public function jobStatus(PrintJob $printJob, Request $request): JsonResponse
     {
-        return [
-            'status' => 'dispatch',
-            'connection_type' => $printer->connection_type,
-            'printer_name' => $printer->name,
-            'printer_target' => $printer->windows_printer_name,
-            'agent_port' => (int) config('printing.agent_port', 9110),
-            'payload' => base64_encode($bytes),
-        ];
-    }
-
-    /**
-     * The browser reports back here after it dispatched a job itself (local_agent),
-     * since the server has no way to know whether it actually printed.
-     */
-    public function logResult(Request $request): Response
-    {
-        if (! $request->user()->can('sales_add') && ! $request->user()->can('sales_edit')) {
+        if (! $request->user()->can('sales_add') && ! $request->user()->can('printers_edit')) {
             abort(403);
         }
 
-        PrintJob::create([
-            'sale_id' => $request->input('sale_id'),
-            'printer_id' => $request->input('printer_id'),
-            'device_label' => $request->input('device_label'),
-            'status' => $request->input('status') === 'success' ? 'success' : 'failed',
-            'error_message' => $request->input('message'),
-            'created_by' => $request->user()->id,
+        return response()->json([
+            'status' => $printJob->status,
+            'message' => $printJob->error_message,
         ]);
-
-        return response('success');
     }
+
+    protected function queuedResponse(PrintJob $job): JsonResponse
+    {
+        return response()->json([
+            'status' => 'queued',
+            'job_id' => $job->id,
+        ]);
+    }
+
 }

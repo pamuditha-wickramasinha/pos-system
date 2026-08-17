@@ -73,6 +73,9 @@
                                             <li><a style="cursor:pointer" onclick="test_print({{ $p->id }})">Test Print</a></li>
                                             <li><a style="cursor:pointer" onclick="use_on_this_device({{ $p->id }}, '{{ $p->connection_type }}', {{ Js::from($p->name) }})">Use on This Device</a></li>
                                             @can('printers_edit')
+                                            @if ($p->connection_type === 'local_agent')
+                                            <li><a href="{{ route('printers.agent_setup', $p) }}">Agent Setup</a></li>
+                                            @endif
                                             <li><a href="{{ route('printers.edit', $p) }}">Edit</a></li>
                                             @endcan
                                             @can('printers_delete')

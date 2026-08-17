@@ -13,6 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/dashboard');
+
+        // The print agent is a background process on the shop PC, not a browser: it has
+        // no session and therefore no CSRF token. It authenticates with its printer's
+        // agent_token instead (see PrintAgentController).
+        $middleware->validateCsrfTokens(except: [
+            'print-agent/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

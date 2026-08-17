@@ -37,16 +37,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Local print agent port
+    | Print agent
     |--------------------------------------------------------------------------
     |
-    | Loopback port that the counter PC's print agent listens on, for printers
-    | with connection_type = local_agent. The browser on that PC posts the
-    | ESC/POS bytes to http://127.0.0.1:<port>/print. Must match the -Port the
-    | agent was started with (see agent/README.md).
+    | Printers with connection_type = local_agent are served by an agent running on
+    | the counter PC, which polls this server for queued jobs (see App\Services\
+    | PrintQueue and agent/README.md). It authenticates with the printer's own
+    | agent_token, so there is nothing to configure here.
     |
     */
-
-    'agent_port' => (int) env('PRINT_AGENT_PORT', 9110),
 
 ];

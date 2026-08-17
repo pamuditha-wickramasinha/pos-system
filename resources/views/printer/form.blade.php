@@ -63,7 +63,7 @@
                         <div class="form-group field-local_agent">
                             <p class="col-sm-2"></p>
                             <div class="col-sm-6">
-                                <p class="help-block">The <strong>POS Print Agent</strong> must be running on the counter PC &mdash; it is what passes receipts to the USB printer, because a web page cannot reach USB hardware on its own. See <code>agent/README.md</code> for the one-time setup. Then click "Use on This Device" on the printers list, from that PC's browser.</p>
+                                <p class="help-block">The <strong>POS Print Agent</strong> must be running on the counter PC &mdash; it collects queued receipts from this server and passes them to the USB printer. Save this printer first, then use <strong>Agent Setup</strong> on the printers list to get its token and setup steps. Finally click "Use on This Device" from that PC's browser.</p>
                             </div>
                         </div>
 

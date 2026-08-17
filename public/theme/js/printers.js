@@ -34,6 +34,8 @@ $('#test_connection').on("click", function () {
 		$btn.attr('disabled', false).text('Test');
 		if (result.status === 'success') {
 			toastr["success"](result.message || "Test print sent! Check the printer.");
+		} else if (result.status === 'pending') {
+			toastr["warning"](result.message);
 		} else {
 			toastr["error"]("Test failed: " + (result.message || 'Unknown error'));
 		}
@@ -138,6 +140,8 @@ function test_print(printerId) {
 		$(".overlay").remove();
 		if (result.status === 'success') {
 			toastr["success"]("Test print sent! Check the printer.");
+		} else if (result.status === 'pending') {
+			toastr["warning"](result.message);
 		} else {
 			toastr["error"]("Test print failed: " + (result.message || 'Unknown error'));
 		}
