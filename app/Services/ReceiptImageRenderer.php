@@ -102,6 +102,10 @@ class ReceiptImageRenderer
             $this->runBrowser([
                 '--headless=new',
                 '--disable-gpu',
+                // Chrome refuses to start as an unprivileged service account (www-data)
+                // unless the setuid sandbox is disabled. Not needed on Windows, where
+                // the server runs as a normal desktop user.
+                ...(DIRECTORY_SEPARATOR === '/' ? ['--no-sandbox'] : []),
                 '--hide-scrollbars',
                 '--no-first-run',
                 '--no-default-browser-check',
@@ -112,7 +116,7 @@ class ReceiptImageRenderer
                 '--window-size='.$width.','.min($height, 4000),
                 '--screenshot='.$shot,
                 $this->fileUrl($workDir.DIRECTORY_SEPARATOR.'receipt.html'),
-            ]);
+            ], $workDir);
 
             if (! is_file($shot)) {
                 throw new RuntimeException('The browser did not produce a receipt image.');
@@ -131,11 +135,14 @@ class ReceiptImageRenderer
     /**
      * @param  array<int, string>  $args
      */
-    protected function runBrowser(array $args): void
+    protected function runBrowser(array $args, string $workDir): void
     {
         $binary = $this->browserBinary();
 
-        $process = new Process([$binary, ...$args]);
+        // A service account's home is often unwritable (www-data's is /var/www), and
+        // Chrome aborts when it cannot create ~/.local. Point HOME at the per-render
+        // work dir, which we own and delete afterwards.
+        $process = new Process([$binary, ...$args], null, ['HOME' => $workDir]);
         $process->setTimeout((float) config('printing.browser_timeout', 30));
 
         try {
