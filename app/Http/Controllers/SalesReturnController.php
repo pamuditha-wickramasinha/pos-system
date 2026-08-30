@@ -117,7 +117,7 @@ class SalesReturnController extends Controller
                 'tot_discount_to_all_amt' => $request->input('tot_discount_to_all_amt') ?: null,
                 'subtotal' => $request->input('tot_subtotal_amt'),
                 'round_off' => $request->input('tot_round_off_amt') ?: null,
-                'grand_total' => $request->input('tot_total_amt'),
+                'grand_total' => $request->input('tot_total_amt') ?: 0,
                 'return_note' => $request->input('return_note'),
                 'created_by' => $request->user()->username,
                 'status' => true,

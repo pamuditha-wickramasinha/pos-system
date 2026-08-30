@@ -315,7 +315,7 @@ class PosController extends Controller
             'discount_to_all_type' => $request->input('discount_type'),
             'tot_discount_to_all_amt' => $request->input('tot_disc') ?: null,
             'subtotal' => $request->input('tot_amt'),
-            'grand_total' => $request->input('tot_grand'),
+            'grand_total' => $request->input('tot_grand') ?: 0,
             'pos' => true,
             'created_by' => $request->user()->username,
         ]);

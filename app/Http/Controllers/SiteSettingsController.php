@@ -59,15 +59,15 @@ class SiteSettingsController extends Controller
         $settings->update($data);
 
         Company::whereKey(1)->update([
-            'category_init' => $request->input('category_init'),
-            'item_init' => $request->input('item_init'),
-            'supplier_init' => $request->input('supplier_init'),
-            'purchase_init' => $request->input('purchase_init'),
-            'purchase_return_init' => $request->input('purchase_return_init'),
-            'customer_init' => $request->input('customer_init'),
-            'sales_init' => $request->input('sales_init'),
-            'sales_return_init' => $request->input('sales_return_init'),
-            'expense_init' => $request->input('expense_init'),
+            'category_init' => $request->input('category_init') ?: '',
+            'item_init' => $request->input('item_init') ?: '',
+            'supplier_init' => $request->input('supplier_init') ?: '',
+            'purchase_init' => $request->input('purchase_init') ?: '',
+            'purchase_return_init' => $request->input('purchase_return_init') ?: '',
+            'customer_init' => $request->input('customer_init') ?: '',
+            'sales_init' => $request->input('sales_init') ?: '',
+            'sales_return_init' => $request->input('sales_return_init') ?: '',
+            'expense_init' => $request->input('expense_init') ?: '',
             'sales_terms_and_conditions' => $request->input('sales_terms_and_conditions'),
         ]);
 
