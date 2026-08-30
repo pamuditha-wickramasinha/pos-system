@@ -224,7 +224,10 @@ class ItemController extends Controller
             ->addColumn('unit_name', fn (Item $i) => $i->unit?->unit_name)
             ->addColumn('stock_qty', fn (Item $i) => $i->stock.' ('.$i->alert_qty.')')
             ->editColumn('purchase_price', fn (Item $i) => app_number_format($i->purchase_price))
-            ->editColumn('final_price', fn (Item $i) => app_number_format($i->final_price))
+            ->addColumn('retail_price', fn (Item $i) => $this->priceCell($i->sales_price, $i->discount))
+            ->addColumn('wholesale_price', fn (Item $i) => $this->priceCell($i->sales_price, $i->wholesale_discount))
+            ->orderColumn('retail_price', '(sales_price - discount) $1')
+            ->orderColumn('wholesale_price', '(sales_price - wholesale_discount) $1')
             ->filterColumn('barcode', function ($query, $keyword) {
                 $query->where(function ($q) use ($keyword) {
                     $q->where('custom_barcode', 'like', "%{$keyword}%")
@@ -236,8 +239,22 @@ class ItemController extends Controller
                 ['label' => 'Edit', 'icon' => 'fa-edit text-blue', 'url' => route('items.edit', $i), 'can' => $request->user()->can('items_edit')],
                 ['label' => 'Delete', 'icon' => 'fa-trash text-red', 'onclick' => "delete_items({$i->id})", 'can' => $request->user()->can('items_delete')],
             ]))
-            ->rawColumns(['checkbox', 'status_badge', 'actions'])
+            ->rawColumns(['checkbox', 'status_badge', 'actions', 'retail_price', 'wholesale_price'])
             ->make(true);
+    }
+
+    /**
+     * Render a price cell: the payable price on top, the "base - discount" derivation below it.
+     */
+    protected function priceCell(float $base, float $discount): string
+    {
+        $final = '<span class="price-final">'.e(app_number_format($base - $discount)).'</span>';
+
+        if ($discount <= 0) {
+            return $final;
+        }
+
+        return $final.'<span class="price-calc">'.e(app_number_format($base)).' <em>&minus;'.e(app_number_format($discount)).'</em></span>';
     }
 
     public function updateStatus(Request $request)

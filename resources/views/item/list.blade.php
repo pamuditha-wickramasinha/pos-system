@@ -4,6 +4,14 @@
 @push('styles')
 @include('partials.datatable-styles')
 <link rel="stylesheet" href="{{ $theme_link }}plugins/lightbox/ekko-lightbox.css">
+<style>
+    /* Scoped to tbody: DataTables copies columns.className onto the <th> too. */
+    #example2 tbody .stock-cell { font-weight: 600; color: #2c3e50; }
+    #example2 tbody .price-cell { white-space: nowrap; line-height: 1.25; }
+    #example2 tbody .price-final { display: block; font-weight: 600; color: #2c3e50; }
+    #example2 tbody .price-calc { display: block; font-size: 11px; color: #95a5a6; }
+    #example2 tbody .price-calc em { font-style: normal; color: #e67e22; }
+</style>
 @endpush
 
 @section('content')
@@ -63,7 +71,8 @@
                             <th>Unit</th>
                             <th>Stock Qty (Minimum Qty)</th>
                             <th>Purchase Price</th>
-                            <th>Final Sales Price</th>
+                            <th>Retail Price</th>
+                            <th>Wholesale Price</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -82,16 +91,27 @@
 @include('partials.datatable-scripts')
 <script src="{{ $theme_link }}plugins/lightbox/ekko-lightbox.js"></script>
 <script type="text/javascript">
+// Exports: take only the payable price from the stacked retail/wholesale cells.
+var exportOpts = {
+    columns: [1,2,3,4,5,6,7,8],
+    format: {
+        body: function (data, row, column, node) {
+            var $final = $('<div>').html(data).find('.price-final');
+            return $final.length ? $final.text() : data;
+        }
+    }
+};
+
 function load_datatable() {
     var table = $('#example2').DataTable({
         dom: '<"row margin-bottom-12"<"col-sm-12"<"pull-left"l><"pull-right"fr><"pull-right margin-left-10 "B>>>tip',
         buttons: { buttons: [
             { className: 'btn bg-red color-palette btn-flat hidden delete_btn pull-left', text: 'Delete', action: function (e, dt, node, config) { multi_delete(); } },
-            { extend: 'copy', className: 'btn bg-teal color-palette btn-flat', exportOptions: { columns: [1,2,3,4,5,6,7] } },
-            { extend: 'excel', className: 'btn bg-teal color-palette btn-flat', exportOptions: { columns: [1,2,3,4,5,6,7] } },
-            { extend: 'pdf', className: 'btn bg-teal color-palette btn-flat', exportOptions: { columns: [1,2,3,4,5,6,7] } },
-            { extend: 'print', className: 'btn bg-teal color-palette btn-flat', exportOptions: { columns: [1,2,3,4,5,6,7] } },
-            { extend: 'csv', className: 'btn bg-teal color-palette btn-flat', exportOptions: { columns: [1,2,3,4,5,6,7] } },
+            { extend: 'copy', className: 'btn bg-teal color-palette btn-flat', exportOptions: exportOpts },
+            { extend: 'excel', className: 'btn bg-teal color-palette btn-flat', exportOptions: exportOpts },
+            { extend: 'pdf', className: 'btn bg-teal color-palette btn-flat', exportOptions: exportOpts },
+            { extend: 'print', className: 'btn bg-teal color-palette btn-flat', exportOptions: exportOpts },
+            { extend: 'csv', className: 'btn bg-teal color-palette btn-flat', exportOptions: exportOpts },
             { extend: 'colvis', className: 'btn bg-teal color-palette btn-flat', text: 'Columns' },
         ]},
         processing: true, serverSide: true, order: [], responsive: true,
@@ -107,9 +127,10 @@ function load_datatable() {
             { data: 'item_name', name: 'item_name' },
             { data: 'brand_category', name: 'brand_category', orderable: false },
             { data: 'unit_name', name: 'unit_name', orderable: false },
-            { data: 'stock_qty', name: 'stock_qty', orderable: false },
+            { data: 'stock_qty', name: 'stock_qty', orderable: false, className: 'stock-cell' },
             { data: 'purchase_price', name: 'purchase_price' },
-            { data: 'final_price', name: 'final_price' },
+            { data: 'retail_price', name: 'retail_price', searchable: false, className: 'price-cell' },
+            { data: 'wholesale_price', name: 'wholesale_price', searchable: false, className: 'price-cell' },
             { data: 'status_badge', name: 'status' },
             { data: 'actions', name: 'actions', orderable: false, searchable: false },
         ],
