@@ -225,6 +225,12 @@ class ItemController extends Controller
             ->addColumn('stock_qty', fn (Item $i) => $i->stock.' ('.$i->alert_qty.')')
             ->editColumn('purchase_price', fn (Item $i) => app_number_format($i->purchase_price))
             ->editColumn('final_price', fn (Item $i) => app_number_format($i->final_price))
+            ->filterColumn('barcode', function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('custom_barcode', 'like', "%{$keyword}%")
+                        ->orWhere('item_code', 'like', "%{$keyword}%");
+                });
+            })
             ->addColumn('status_badge', fn (Item $i) => DatatableHtml::statusBadge($i->id, $i->status))
             ->addColumn('actions', fn (Item $i) => DatatableHtml::actionMenu([
                 ['label' => 'Edit', 'icon' => 'fa-edit text-blue', 'url' => route('items.edit', $i), 'can' => $request->user()->can('items_edit')],
